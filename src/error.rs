@@ -5,23 +5,8 @@ use serde_json::json;
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug)]
-pub enum ErrorType {
+pub enum Error {
     NotFoundError,
-}
-
-#[derive(Debug)]
-pub struct Error {
-    error_type: ErrorType,
-}
-
-impl Error {
-    pub fn new (error_type: ErrorType) -> Self {
-        Error {error_type}
-    }
-
-    pub fn new_not_found() -> Self {
-        Error::new(ErrorType::NotFoundError)
-    }
 }
 
 impl IntoResponse for Error {
