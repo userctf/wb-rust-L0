@@ -110,6 +110,10 @@ impl DataBase {
     }
 
     pub(crate) async fn add_order(&self, order: &WBmodel) -> Result<(), Error> {
+        if self.check_if_exists(&order.order_uid).await? {
+            info!("Saving order twice: {}", order.order_uid);
+            return Ok(());
+        }
         let insert_delivery = r#"
             INSERT INTO delivery (name, phone, zip, city, address, region, email) 
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -208,6 +212,18 @@ impl DataBase {
         tx.commit().await?;
         Ok(())
     } 
+
+    async fn check_if_exists(&self, order_uid: &String) -> Result<bool, Error> {
+        let request = r#"
+            SELECT order_uid FROM orders WHERE order_uid = $1;
+        "#;
+        let rows_affected = sqlx::query(request)
+            .bind(order_uid)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        Ok(rows_affected.is_some())
+    }
 
     pub(crate) async fn init(&self) {
         info!("Start DB initialization");
