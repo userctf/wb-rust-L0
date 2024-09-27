@@ -1,4 +1,5 @@
 use axum::{http::StatusCode, response::{IntoResponse, Response}};
+use log::{error, warn};
 use serde_json::json;
 
 
@@ -7,12 +8,16 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     NotFoundError,
+    CanNotLockState,
+    DBSelectError,
+    DBInsertError,
 }
 
 impl IntoResponse for Error {
 	fn into_response(self) -> Response {
-		println!("->> {:<12} - {self:?}", "ERROR OCCURRED");
+		warn!("->> {:<12} - {self:?}", "ERROR OCCURRED");
         let msg = json!({
+            "status": "error",
             "error_code": 500,
         });
 
