@@ -18,26 +18,26 @@ pub struct Payment {
     pub request_id: String,
     pub currency: String,
     pub provider: String,
-    pub amount: i64,
+    pub amount: i32,
     pub payment_dt: i64,
     pub bank: String,
-    pub delivery_cost: i64,
-    pub goods_total: i64,
-    pub custom_fee: i64
+    pub delivery_cost: i32,
+    pub goods_total: i32,
+    pub custom_fee: i32
 }
 #[derive(Deserialize, Serialize, FromRow)]
 pub struct Item {
     pub chrt_id: i64,
     pub track_number: String,
-    pub price: i64,
+    pub price: i32,
     pub rid: String,
     pub name: String,
-    pub sale: i64,
+    pub sale: i32,
     pub size: String,
-    pub total_price: i64,
+    pub total_price: i32,
     pub nm_id: i64,
     pub brand: String,
-    pub status: i64
+    pub status: i32
 }
 #[derive(Deserialize, Serialize)]
 pub struct WBmodel {
