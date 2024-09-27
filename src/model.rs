@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
 
-#[derive(Deserialize, Serialize, FromRow)]
+#[derive(Deserialize, Serialize, FromRow, Hash)]
 pub struct Delivery {
     pub name: String,
     pub phone: String,
@@ -12,7 +12,7 @@ pub struct Delivery {
     pub region: String,
     pub email: String
 }
-#[derive(Deserialize, Serialize, FromRow)]
+#[derive(Deserialize, Serialize, FromRow, Hash)]
 pub struct Payment {
     pub transaction: String,
     pub request_id: String,
@@ -25,7 +25,7 @@ pub struct Payment {
     pub goods_total: i32,
     pub custom_fee: i32
 }
-#[derive(Deserialize, Serialize, FromRow)]
+#[derive(Deserialize, Serialize, FromRow, Hash)]
 pub struct Item {
     pub chrt_id: i64,
     pub track_number: String,
@@ -39,7 +39,7 @@ pub struct Item {
     pub brand: String,
     pub status: i32
 }
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Hash)]
 pub struct WBmodel {
     pub order_uid: String,
     pub track_number: String,

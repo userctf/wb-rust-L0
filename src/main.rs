@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{num::NonZeroUsize, sync::Arc};
 
 use axum::{extract::{Path, State}, routing::{get, post}, Json, Router};
 use log::{debug, info, error};
@@ -7,6 +7,7 @@ use tokio::sync::Mutex;
 use database::DataBase;
 use dotenv::dotenv;
 use model::WBmodel;
+use lru::LruCache;
 
 
 pub use self::error::{Error, Result};
@@ -17,6 +18,7 @@ mod database;
 struct ServerData {
     ip: String,
     port: String,
+    cap: usize,
 
     db_username: String,
     db_password: String,
@@ -32,22 +34,27 @@ impl ServerData {
         dotenv().ok();
         let ip = std::env::var("WB_IP").expect("WB_IP must be set.");
         let port = std::env::var("WB_PORT").expect("WB_PORT must be set.");
+        let cap:usize = std::env::var("WB_CAP").expect("WB_CAP must be set.").parse().unwrap_or(20);
 
         let db_username = std::env::var("WB_DB_username").expect("WB_DB_username must be set.");
         let db_password = std::env::var("WB_DB_password").expect("WB_DB_password must be set.");
         let db_table_name = std::env::var("WB_DB_table_name").expect("WB_DB_table_name must be set.");
 
-        ServerData{ip, port, db_username, db_password, db_table_name}
+        ServerData{ip, port, cap, db_username, db_password, db_table_name}
     }   
 }
 #[derive(Clone)]
 struct AppState {
     db: Arc<Mutex<DataBase>>,
+    cache: Arc<Mutex<LruCache<String, WBmodel>>>,
 }
 
 impl AppState {
-    fn init (db: DataBase) -> Self {
-        Self {db: Arc::new(Mutex::new(db))}
+    fn init (db: DataBase, cap: usize) -> Self {
+        Self {
+            db: Arc::new(Mutex::new(db)),
+            cache: Arc::new(Mutex::new(LruCache::new(NonZeroUsize::new(cap).unwrap())))
+        }
     }
 }
 
@@ -61,7 +68,10 @@ async fn main() {
         .await
         .unwrap();
 
-    let app_state = AppState::init(DataBase::connect(s_data.db_username, s_data.db_password, s_data.db_table_name).await);
+    let app_state = AppState::init(
+        DataBase::connect(s_data.db_username, s_data.db_password, s_data.db_table_name).await,
+        s_data.cap
+    );
     let app = Router::new()
         .route("/get_order/:order_uid", get(get_order))
         .route("/save_order", post(save_order))
